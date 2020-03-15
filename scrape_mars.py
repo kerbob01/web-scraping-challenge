@@ -2,8 +2,9 @@
 from splinter import Browser
 from bs4 import BeautifulSoup as bs
 import pandas as pd
-import requests
+import requests as req
 import pymongo
+import time
 #browser = Browser('chrome')
 
 def init_browser():
@@ -11,9 +12,7 @@ def init_browser():
     executable_path = {"web-scraping-challenge": "chromedriver.exe"}
     return Browser("chrome", **executable_path, headless=False)
 
-def scrape():
-    browser = init_browser()
-    mars_dict ={}
+
 
 ##################################################################################################################
 
@@ -21,6 +20,8 @@ def scrape():
 browser = Browser('chrome')    
 nasa_url = 'https://mars.nasa.gov/news/'
 browser.visit(nasa_url)
+#added to prevent Index out of rang error on article_teaser_body
+time.sleep(4)
 html = browser.html
 news_soup = bs(html, 'html.parser')
 news_title = news_soup.find_all('div', class_='content_title')[1].text
@@ -44,26 +45,26 @@ print(relative_image_path)
 print(featured_image_url)
 
 #########################################################################################################################
-
-# #Gets Mars weather from twitter
-# weather_url = 'https://twitter.com/marswxreport?lang=en'
-# browser.visit(weather_url)
-# html = browser.html
-# soup = bs(html, "html.parser")
-# tweet_containers = soup.find_all('div', class_="js-tweet-text-container")
-# print(tweet_containers[0].text)
-# p = tweet_containers[0].text
-# type(p)
+#Mars Weater from twitter
+twitter_response = req.get("https://twitter.com/marswxreport?lang=en")
+twitter_soup = bs(twitter_response.text, 'html.parser')
+html = browser.html
+soup = bs(html, "html.parser")
+tweet_containers = twitter_soup.find_all('div', class_="js-tweet-text-container")
+print(tweet_containers[0].text)
+p = tweet_containers[0].text
+type(p)
 # for tweets in tweet_containers:
 #     if tweets.text:
 #         print(tweets.text)
 #         break
-
-# for i in range(10):
-#     tweets = tweet_containers[i].text
-#     if "Sol " in tweets:
-#         print(tweets)
-#         break
+for i in range(10):
+    tweets = tweet_containers[i].text
+    if "Sol " in tweets:
+        print(tweets)
+        break
+weather = tweet_containers[0].text        
+print(weather)
 
 #############################################################################################################################
  # Mars facts to be scraped, converted into html table
@@ -110,7 +111,7 @@ mars_dict = {
     "news_title": news_title,
     "news_body": news_body,
     "featured_image_url": featured_image_url,
-    #"mars_weather": mars_weather,
+    "mars_weather": weather,
     "fact_table": str(mars_html_table),
     "hemisphere_images": hemisphere_image_urls
     }
